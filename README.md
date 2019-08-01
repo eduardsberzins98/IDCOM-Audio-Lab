@@ -1,6 +1,6 @@
 # IDCOM Audio Lab
 
-Welcome to the IDCOM Audio Audio Signal Processing Lab! To start recording AUDIO and VIDEO read the Getting Started guide located in the Audio Lab documentation located here:
+Welcome to the IDCOM Audio Signal Processing Lab! To start recording AUDIO and VIDEO read the Getting Started guide in the IDCOM Audio Lab Documentation OneNote Notebook:
 
 https://uoe-my.sharepoint.com/:o:/g/personal/s1755030_ed_ac_uk/EjMykFiuLl5Hv3tm8WI6QdIBglHZRosdeOFeYFTSCAurug?e=bqAAFP
 
