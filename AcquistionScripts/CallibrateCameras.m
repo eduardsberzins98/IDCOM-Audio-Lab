@@ -1,3 +1,5 @@
+%% Camera Preview Function
+%Displays previews to cameras given specific acqustion parameters
 function CallibrateCameras(format, fps, numcam)
 				
 if numcam == 3
