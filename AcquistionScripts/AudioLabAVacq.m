@@ -4,8 +4,8 @@
 %of Edinburgh Audio Lab. It is only compatible with the equipment in that
 %lab.
 
-%Plese read the Audio Lab Documentation located
-% here: https://uoe-my.sharepoint.com/:o:/g/personal/s1755030_ed_ac_uk/EjMykFiuLl5Hv3tm8WI6QdIBglHZRosdeOFeYFTSCAurug?e=bqAAFP
+%Plese read the Audio Lab Documentation located here: 
+%https://uoe-my.sharepoint.com/:o:/g/personal/s1755030_ed_ac_uk/EjMykFiuLl5Hv3tm8WI6QdIBglHZRosdeOFeYFTSCAurug?e=bqAAFP
 clear all;
 close all;
 clc;
