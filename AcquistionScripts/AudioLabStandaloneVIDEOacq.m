@@ -5,7 +5,7 @@
 %lab.
 
 %Plese read the Audio Lab Documentation located
-% here: before starting acquistion.
+% here:https://uoe-my.sharepoint.com/:o:/g/personal/s1755030_ed_ac_uk/EjMykFiuLl5Hv3tm8WI6QdIBglHZRosdeOFeYFTSCAurug?e=bqAAFP
 clear all;
 close all;
 clc;
@@ -17,7 +17,7 @@ seconds = 10;
 
 %VIDEO frame rate (in frames per second). Not all FPS are supported,
 %consult documentation
-fps = 15; 
+fps = 15;
 
 %VIDEO format, choose one of these formats:
 % Y422_1024x768   Y411_640x480	RGB24_1024x768	Y16_1024x768	Y8_1024x768
@@ -26,7 +26,7 @@ fps = 15;
 % Y422_320x240                  RGB24_640x480	Y16_640x480     Y8_640x480
 % Y422_640x480                  RGB24_800x600	Y16_800x600     Y8_800x600
 % Y422_800x600
-vidformat = 'RGB24_640x480'; 
+vidformat = 'RGB24_640x480';
 
 %% Bandwidth and Callibrate
 seconds = ceil(seconds); %to make sure it's a whole number
@@ -111,26 +111,26 @@ spmd(numcam)
             end
         labBarrier %Blocks execution in parallel until worker reaches this point%
         end
-    
+
     cameraID = labindex;
-    
+
     % Configure properties common for ALL cameras
     v = videoinput('dcam', cameraID, vidformat);
     s = v.Source;
     s.FrameRate = num2str(fps);
     v.FramesPerTrigger = totalframes;
     v.LoggingMode = 'disk';
-    
-     if cameraID == 1       
+
+     if cameraID == 1
         logfile1 = VideoWriter(viddirectory1,'Uncompressed AVI');
         logfile1.FrameRate = fps;
         v.DiskLogger = logfile1;
-        
+
     elseif cameraID == 2
         logfile2 = VideoWriter(viddirectory2,'Uncompressed AVI');
         logfile2.FrameRate = fps;
         v.DiskLogger = logfile2;
-        
+
     elseif cameraID == 3
         logfile3 = VideoWriter(viddirectory3,'Uncompressed AVI');
         logfile3.FrameRate = fps;
@@ -179,7 +179,7 @@ spmd(numcam)
     disp('Finished Recording. Logging VIDEO frames to files');
 
     % Wait until all frames are logged
-    while (v.FramesAcquired ~= v.DiskLoggerFrameCount) 
+    while (v.FramesAcquired ~= v.DiskLoggerFrameCount)
         pause(1);
     end
     disp(['Acquired ', num2str(v.FramesAcquired), ' frames, logged ' num2str(v.DiskLoggerFrameCount), ' frames.']);
@@ -199,7 +199,4 @@ disp('NO timestamp CSV and TXT files created')
 disp(['All files saved to Recordings/', AVfolder]);
 appost = '''';
 timewithappost= strcat(appost, timenow, appost);
-disp(['To read all data into structure array run video = DataReader(',timewithappost, ',' num2str(numcam),',0)']); 
-
-
-
+disp(['To read all data into structure array run video = DataReader(',timewithappost, ',' num2str(numcam),',0)']);
