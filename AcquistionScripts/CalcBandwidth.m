@@ -1,4 +1,5 @@
-
+%% Bandwidth Calculator function
+%Calculates the required bandwidth given specific acquistion parameters
 function bandwidth = CalcBandwidth(format, fps, numcam, sampr,audio)
 
 if strcmp(format,'RGB24_1024x768')
