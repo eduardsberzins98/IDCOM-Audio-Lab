@@ -1,4 +1,5 @@
-%% Read files script
+%% AV data reader script
+%Reads avi, wav and timestamp files into structures
 function [video, audio] = DataReader(rectime, numVrec, numArec)
 if numArec && numVrec
     disp('Reading timestamps')
@@ -30,7 +31,7 @@ if numArec
         audio.recordings(:,a) = audioread(audiofiledir);
     end
 end
-
+%Asign the corresponding video frame to each audio sample
 if numVrec && numArec
     currentFrame = 1;
     currentSample = 1;
