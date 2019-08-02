@@ -1,27 +1,31 @@
+%% Frame Analyser Function
+%Reads in the first couple RGB frames and extracts the embedded information
+%in the first couple of bytes. 
+
 function startedOn = FrameAnalyser(filelocation, seconds, fps, SPATERN)
-pixelrow = 1;%1
-bytesread = 10; %5 %how many bytes are we reading
-framegrab = SPATERN+1;% 5
+pixelrow = 1;% Read only first pixel row
+bytesread = 10; %Read first 10 bytes
+framegrab = SPATERN+1;% Read first 5 frames (SPATERN is 4, strobes on every 4th frame)
 
 counter = 1;
 video = VideoReader(filelocation);
 while hasFrame(video) && (counter < framegrab) 
     currentframe = readFrame(video);
-    unint8infoR = currentframe(pixelrow,1:bytesread,1); %Read in first x bytes(8bits)
-    unint8infoG = currentframe(pixelrow,1:bytesread,2); 
-    unint8infoB = currentframe(pixelrow,1:bytesread,3); 
-    for z = 1:bytesread
-        binaryinfoR = decimalToBinaryVector(unint8infoR(z),8); %Convert the int to 8 bits
-        hexinfo1R = binaryVectorToHex(binaryinfoR(1:4));
+    unint8infoR = currentframe(pixelrow,1:bytesread,1); %Read in first x RED bytes(8bits)
+    unint8infoG = currentframe(pixelrow,1:bytesread,2); %Read in first x GREEN bytes(8bits)
+    unint8infoB = currentframe(pixelrow,1:bytesread,3); %Read in first x BLUE bytes(8bits)
+    for z = 1:bytesread %For each byte read
+        binaryinfoR = decimalToBinaryVector(unint8infoR(z),8); %Convert the RED int to 8 bits
+        hexinfo1R = binaryVectorToHex(binaryinfoR(1:4)); %One byte is 2 hex numbers
         hexinfo2R = binaryVectorToHex(binaryinfoR(5:8));
         hexinfo(counter, 6*z-5:6*z-4) = [hexinfo1R hexinfo2R];
         
-        binaryinfoG = decimalToBinaryVector(unint8infoG(z),8); %Convert the int to 8 bits
+        binaryinfoG = decimalToBinaryVector(unint8infoG(z),8); %Convert the GREEN int to 8 bits
         hexinfo1G = binaryVectorToHex(binaryinfoG(1:4));
         hexinfo2G = binaryVectorToHex(binaryinfoG(5:8));
         hexinfo(counter, 6*z-3:6*z-2) = [hexinfo1G hexinfo2G];
         
-        binaryinfoB = decimalToBinaryVector(unint8infoB(z),8); %Convert the int to 8 bits
+        binaryinfoB = decimalToBinaryVector(unint8infoB(z),8); %Convert the BLUE int to 8 bits
         hexinfo1B = binaryVectorToHex(binaryinfoB(1:4));
         hexinfo2B = binaryVectorToHex(binaryinfoB(5:8));
         hexinfo(counter, 6*z-1:6*z) = [hexinfo1B hexinfo2B];   
@@ -32,12 +36,15 @@ end
 startedOn = str2num(hexinfo(1,16));
 disp('This was the HEX info from the first few frames:')
  disp(hexinfo(1:(framegrab-1),1:16));
+ 
+
 if ~strcmp(hexinfo(1,9:15), ['80000', num2str(SPATERN), '0'])
     warning('CANNOT FIND STROBE PATTERN HEX INFO IN VIDEO');
 end
 
 
-%% timsestamp info grabber
+%% Timsestamp info grabber
+%The frames also get embedded with timestamp information in the first byte
 % for a=1:(framegrab-1)
 %     binTimeStamp(a,1:32) = hexToBinaryVector(hexinfo(a,1:8), 32);
 %     DecTimeStampCycles(a,1) = binaryVectorToDecimal(binTimeStamp(a,1:7));
