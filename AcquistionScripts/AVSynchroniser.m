@@ -1,4 +1,7 @@
 %% AV Synchroniser
+%That takes in the frame HEX info and Strobe Signal, calculates the initial
+%frame to initial sample error and adjusts the audio accordingly and passes it
+%back to the master script. It also creates the timestamps from the strobe signal
 function [Recording,TimeStampsSamples,FrameDurationSamples, FrameDriftSamples] = AVSynchroniser(Recording, sampr, viddirectory1, fps, seconds, SPATERN)
 
 %% Getting the Strobe Signal
@@ -16,11 +19,11 @@ for n = 1:(StrobeCount-1)
     SamplesUpToStrobe(n) = StrobeLocSamples(n) - StrobeLocSamples(1);
     ExpectedSamplesUpToStrobe(n) = (n-1)*ExpectedSamplesPerStrobe;
     StrobeDrift(n) = ExpectedSamplesUpToStrobe(n) - SamplesUpToStrobe(n);
-    
+
     if SamplesPerStrobe(n) > 1.5*ExpectedSamplesPerStrobe %Drift shouldn't be bigger than 1.5 x expected strobe duration
         warning(['I MIGHT HAVE MISSED STROBE ', num2str(n)])
     end
-    
+
 end
 
 %% Initial Trigger Sync Error
@@ -121,7 +124,7 @@ title('Strobe drift'), xlabel('Strobe'), ylabel('Drift (ms)')
         zeroArray = zeros(abs(InitialFrameErrorSamples),numChan);
         Recording = [zeroArray;Recording];
     end
-    
+
 %% CREATING TIMESTAMPS
 OneFrameSamples = round((1/fps)*sampr);
 
@@ -145,7 +148,7 @@ while (currentStamp<=TotalFrames) && (currentStrobe<=StrobeCount)
         TimeStampsSamples(currentStamp + q) = StrobeLocSamples(currentStrobe) + q*OneFrameSamples;
     end
     currentStrobe = currentStrobe + 1;
-    currentStamp = currentStamp + SPATERN; 
+    currentStamp = currentStamp + SPATERN;
 end
 %ADD OR REMOVE STAMPS AFTER LAST STROBE
 [~, TimeStampCount] = size(TimeStampsSamples);
@@ -194,5 +197,3 @@ disp(TimeStampsSamples(1:2*SPATERN)./(sampr*1E-3));
 disp('These are the first few strobes:');
 disp(((StrobeLocSamples(1:2*SPATERN)./(sampr*1E-3))).');
 format short
-
-
