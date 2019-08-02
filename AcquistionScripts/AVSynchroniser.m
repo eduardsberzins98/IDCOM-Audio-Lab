@@ -17,7 +17,7 @@ for n = 1:(StrobeCount-1)
     ExpectedSamplesUpToStrobe(n) = (n-1)*ExpectedSamplesPerStrobe;
     StrobeDrift(n) = ExpectedSamplesUpToStrobe(n) - SamplesUpToStrobe(n);
     
-    if SamplesPerStrobe(n) > 1.5*ExpectedSamplesPerStrobe
+    if SamplesPerStrobe(n) > 1.5*ExpectedSamplesPerStrobe %Drift shouldn't be bigger than 1.5 x expected strobe duration
         warning(['I MIGHT HAVE MISSED STROBE ', num2str(n)])
     end
     
