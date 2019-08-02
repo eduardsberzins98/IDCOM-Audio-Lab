@@ -4,8 +4,8 @@
 %of Edinburgh Audio Lab. It is only compatible with the equipment in that
 %lab.
 
-%Plese read the Audio Lab Documentation located
-% here:https://uoe-my.sharepoint.com/:o:/g/personal/s1755030_ed_ac_uk/EjMykFiuLl5Hv3tm8WI6QdIBglHZRosdeOFeYFTSCAurug?e=bqAAFP
+%Plese read the Audio Lab Documentation located here:
+%https://uoe-my.sharepoint.com/:o:/g/personal/s1755030_ed_ac_uk/EjMykFiuLl5Hv3tm8WI6QdIBglHZRosdeOFeYFTSCAurug?e=bqAAFP
 clear all;
 close all;
 clc;
@@ -29,18 +29,18 @@ fps = 15;
 vidformat = 'RGB24_640x480';
 
 %% Bandwidth and Callibrate
-seconds = ceil(seconds); %to make sure it's a whole number
-imaqreset;
+seconds = ceil(seconds); %To make sure it's a whole number
+imaqreset; %Reset image acqusition toolbox
 delete(imaqfind);
 camerainfo = imaqhwinfo('dcam');
-numcam = numel(camerainfo.DeviceIDs);
+numcam = numel(camerainfo.DeviceIDs);%How many cameras were found on DCAMs adaptor
 disp(['I found ', num2str(numcam), ' cameras and I will record from ', num2str(numcam), ' cameras']);
 disp(['Recording duration: ', num2str(seconds), ' seconds']);
 disp(['Camera framerate: ', num2str(fps), ' FPS']);
 disp(['Video format: ', vidformat]);
 disp('No audio will be recorded');
 
-bandwidth = CalcBandwidth(vidformat,fps,numcam,0,0);
+bandwidth = CalcBandwidth(vidformat,fps,numcam,0,0);%Call bandwidth calculation function
 disp(['The required bandwidth is ', num2str(bandwidth*1E-6), ' mbps']);
 if bandwidth >= 629E6
     disp('That is too much, in this configuration I can only handle 629mbps');
@@ -74,7 +74,7 @@ OldPool = gcp('nocreate');
         disp('Correct number of workers running in pool');
     end
 end
-%% Non-Parallel VIDEO setup
+%% Video logging setup
 
 disp('Setting video logging parameters')
 namenow = now;
@@ -90,17 +90,17 @@ viddirectory1 = ['../Recordings\', AVfolder, '\',vidfoldername, '\', vidfilename
 viddirectory2 = ['../Recordings\', AVfolder, '\',vidfoldername, '\', vidfilename2];
 viddirectory3 = ['../Recordings\', AVfolder, '\',vidfoldername, '\', vidfilename3];
 
-%% Parallel Pool Setup
+%% Parallel Video setup
 
 delete(imaqfind);
-spmd(numcam) %Single Programme Multiple Data (spmd), specify to run this only on 4 workers
+spmd(numcam) %Single Programme Multiple Data (spmd). Run a worker for each camera
     if labindex ~= numcam
     delete(imaqfind);
     end
 end
 disp('Looking for cameras')
 spmd(numcam)
-        for idx = 1:numcam %Cycle through the first 3 workers - cameras
+        for idx = 1:numcam %Cycle all the camera workers
             if idx == labindex%labindex is the index of current worker%
                 imaqreset
                 % Detect cameras
@@ -115,15 +115,15 @@ spmd(numcam)
     cameraID = labindex;
 
     % Configure properties common for ALL cameras
-    v = videoinput('dcam', cameraID, vidformat);
-    s = v.Source;
-    s.FrameRate = num2str(fps);
-    v.FramesPerTrigger = totalframes;
-    v.LoggingMode = 'disk';
+    v = videoinput('dcam', cameraID, vidformat); %Video input object
+    s = v.Source; %Cameras only have one default video input source
+    s.FrameRate = num2str(fps); %Record at specified framerate, it's a string
+    v.FramesPerTrigger = totalframes; %Record fps*seconds frames
+    v.LoggingMode = 'disk'; %Log to disk
 
      if cameraID == 1
         logfile1 = VideoWriter(viddirectory1,'Uncompressed AVI');
-        logfile1.FrameRate = fps;
+        logfile1.FrameRate = fps; %Log at CFR specified FPS, default is 30. VFR is not possible
         v.DiskLogger = logfile1;
 
     elseif cameraID == 2
@@ -138,14 +138,14 @@ spmd(numcam)
      end
 end
 
-%% Initialising streams
+%% Initialise video
 
 spmd(numcam)
-    triggerconfig(v, 'manual');
+    triggerconfig(v, 'manual'); %Set trigger mode to manual (software trigger), default is immediate(software trigger after initialise)
 end
 
 spmd(numcam)
-    start(v);
+    start(v); %Initialise cameras
 end
 
 disp('VIDEO Initialised')
@@ -153,7 +153,14 @@ disp('VIDEO Initialised')
 disp('PLEASE CHECK CAMERA INDICATOR LIGHTS ARE GREEN BEFORE RECORDING')
 dorec = input(['Should I start recording for ', num2str(seconds), ' seconds?[y,n]'], 's');
 if dorec == 'y'
-else
+else %User doesn't want to record, clean up all input objects
+    spmd(numcam+1)
+        if labindex ~= numcam+1
+            delete(v);
+            delete(imaqfind);
+        end
+    end
+	clear all;
     return
 end
 
@@ -163,7 +170,7 @@ for countdown = 3:-1:1
     pause(1);
 end
 spmd(numcam)
-        trigger(v);
+        trigger(v);%Software trigger
 end
 
 disp('DO NOT UNPLUG ANY FIREWIRE CABLES, COMPUTER WILL CRASH')
@@ -171,7 +178,7 @@ for timekeep = seconds:-1:1
    disp(['Recording, ' num2str(timekeep), ' seconds left']);
    pause(1);
 end
-%% VIDEO timeout and VIDEO trigger event info
+%% VIDEO timeout
 
 spmd(numcam)
     % Wait until acquisition is complete and specify wait timeout
@@ -184,7 +191,7 @@ spmd(numcam)
     end
     disp(['Acquired ', num2str(v.FramesAcquired), ' frames, logged ' num2str(v.DiskLoggerFrameCount), ' frames.']);
 end
-%% VIDEO cleanup and fetch audio
+%% VIDEO cleanup
 disp('Cleaning up')
 spmd(numcam)
     delete(v);
