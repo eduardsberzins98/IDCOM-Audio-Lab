@@ -5,7 +5,7 @@
 %lab.
 
 %Plese read the Audio Lab Documentation located
-% here: before starting acquistion.
+% here: https://uoe-my.sharepoint.com/:o:/g/personal/s1755030_ed_ac_uk/EjMykFiuLl5Hv3tm8WI6QdIBglHZRosdeOFeYFTSCAurug?e=bqAAFP
 clear all;
 close all;
 clc;
@@ -16,7 +16,7 @@ seconds =15;
 
 %VIDEO frame rate (in frames per second). Not all FPS are supported,
 %consult documentation
-fps = 15; 
+fps = 15;
 
 %VIDEO format, choose one of these formats:
 % RGB24_1024x768
@@ -24,11 +24,11 @@ fps = 15;
 % RGB24_1600x1200
 % RGB24_640x480
 % RGB24_800x600
-vidformat = 'RGB24_640x480'; 
+vidformat = 'RGB24_640x480';
 
 %Recorded AUDIO channel index (ASIO driver index). Only these channels and
-%channel 1 (for STROBE) will be recorded:                                                  
-MicChan = [5 6 13 20]; 
+%channel 1 (for STROBE) will be recorded:
+MicChan = [5 6 13 20];
 
 %AUDIO sample Rate (in Hz). Choose one of these:
 %32000
@@ -37,7 +37,7 @@ MicChan = [5 6 13 20];
 sampr = 44100;
 
 %% Strobe pattern set:
-SPATERN = 4;
+SPATERN = 4; %Strobe signal strobes on every 4th captures frame
 %% Bandwidth and Callibrate
 seconds = ceil(seconds); %to make sure it's a whole number
 imaqreset; %Reset image acqusition toolbox
@@ -156,27 +156,27 @@ spmd(numcam+1)
         labBarrier %Blocks execution in parallel until worker reaches this point%
         end
   if labindex ~= numcam+1
-    
+
     cameraID = labindex; %Current worker number is also current camera ID
-    
+
     % Configure properties common for ALL cameras
     v = videoinput('dcam', cameraID, vidformat); %create video input object for each camera (ID) on the DCAM adaptor at a particular video format
     s = v.Source; %video source ibject (just one for these cameras, no need to specify)
     s.FrameRate = num2str(fps); %set frame rate, it is a string paramter
     v.FramesPerTrigger = totalframes; %after first manual trigger acquire seconds*fps frames
     v.LoggingMode = 'disk'; %log all frames to disk, not memory for longer recordings
-    
+
     %Logging paramters for each camera seperately
-     if cameraID == 1       
+     if cameraID == 1
         logfile1 = VideoWriter(viddirectory1,'Uncompressed AVI'); %Video writer object to write uncomp AVI in prespecified video directory
         logfile1.FrameRate = fps; %log in prespecified framerate, defaults to 30
-        v.DiskLogger = logfile1; %assign video writer object to log to video input disk logger. 
-        
+        v.DiskLogger = logfile1; %assign video writer object to log to video input disk logger.
+
     elseif cameraID == 2
         logfile2 = VideoWriter(viddirectory2,'Uncompressed AVI');
         logfile2.FrameRate = fps;
         v.DiskLogger = logfile2;
-        
+
     elseif cameraID == 3
         logfile3 = VideoWriter(viddirectory3,'Uncompressed AVI');
         logfile3.FrameRate = fps;
@@ -194,7 +194,7 @@ spmd(numcam+1)
 end
 
 spmd(numcam+1)
-    if labindex ~= numcam+1
+    if labindex ~= numcam+1 %On all camera workers, not the audio worker
         if labindex == 1 %Strobe only on the black camera
             disp('Starting to strobe dcam 1');
             s.Strobe2 = 'on';
@@ -202,10 +202,10 @@ spmd(numcam+1)
             s.Strobe2Duration = 3584; % Default duration is shutter length, specify hex number: 0xE00 (32ms, see hardware manual)
         end
     start(v); %Initialise all cameras, but don't yet trigger
-    
+
     end
-    if labindex == numcam+1
-     
+    if labindex == numcam+1 %On just the audio worker
+
     playrec('init', sampr, -1, defaultID); %Initialise audio at given sample rate, -1 means no play device, defaultID ir rec device
 
     end
@@ -223,7 +223,7 @@ else %User doesn't want to record, clean up all input objects
             delete(imaqfind);
         end
     end
-	clear all; %Also removes playrec ad audio device
+	clear all; %Also removes playrec
     return
 end
 
@@ -240,7 +240,7 @@ spmd(numcam+1)
     end
     if labindex == numcam+1
 
-       playrec('rec',duration,MicChan); %Start recording audio, from microphone channels for samples*seconds 
+       playrec('rec',duration,MicChan); %Start recording audio, from microphone channels for samples*seconds
 
     end
 end
@@ -255,7 +255,7 @@ spmd(numcam+1)
     disp('Finished Recording. Logging VIDEO frames to files');
 
     % Wait until all frames are logged
-    while (v.FramesAcquired ~= v.DiskLoggerFrameCount) 
+    while (v.FramesAcquired ~= v.DiskLoggerFrameCount)
         pause(1);
     end
     disp(['Acquired ', num2str(v.FramesAcquired), ' frames, logged ' num2str(v.DiskLoggerFrameCount), ' frames.']);
@@ -264,7 +264,7 @@ spmd(numcam+1)
     trigdata = events(2).Data;
     stopdata = events(3).Data;
     end
-    
+
     if labindex == numcam+1 %Audio workers is free so use it to count seconds remaining
        for timekeep = seconds:-1:1
            disp(['Recording, ' num2str(timekeep), ' seconds left']);
@@ -352,4 +352,4 @@ disp('Timestamp CSV and TXT files created')
 disp(['All files saved to Recordings/', AVfolder]);
 appost = '''';
 timewithappost= strcat(appost, timenow, appost);
-disp(['To read all data into structure array run [video, audio] = DataReader(',timewithappost, ',' num2str(numcam),',',num2str(numChan-1), ')']); 
+disp(['To read all data into structure array run [video, audio] = DataReader(',timewithappost, ',' num2str(numcam),',',num2str(numChan-1), ')']);
