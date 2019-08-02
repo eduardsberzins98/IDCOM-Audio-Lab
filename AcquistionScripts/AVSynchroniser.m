@@ -1,4 +1,4 @@
-%% AV Synchroniser
+%% AV Synchroniser Function
 %That takes in the frame HEX info and Strobe Signal, calculates the initial
 %frame to initial sample error and adjusts the audio accordingly and passes it
 %back to the master script. It also creates the timestamps from the strobe signal
@@ -27,19 +27,17 @@ for n = 1:(StrobeCount-1)
 end
 
 %% Initial Trigger Sync Error
-%Getting info on which out of 3 frames the recording started
+%Gettning Strobe Pattern Number information for first frame
 disp('Looking at frame HEX info')
 startedOn = FrameAnalyser(viddirectory1, seconds, fps, SPATERN);
-
-%%Comparing to matching frames in other strobe periods, seeing which is
-%%closer
 
 %% OPTION CREATOR
 SingleStrobeDelaySamples = (1/fps)*sampr;
 
-%Strobes on frame SPATERN
+%SPATERN is the period of the strobe pattern, in this case 4
+%Find last frame prior to strobe signal with same correct startedOn
 Option0 = StrobeLocSamples(1) - (SPATERN - startedOn - 1)*SingleStrobeDelaySamples;
-
+%Generate options one strobe ahead and behind
 OptionPos = Option0 + SPATERN*SingleStrobeDelaySamples;
 OptionNeg = Option0 - SPATERN*SingleStrobeDelaySamples;
 disp('These were the options:')
@@ -47,7 +45,7 @@ disp([OptionNeg/(sampr*1E-3), Option0/(sampr*1E-3), OptionPos/(sampr*1E-3)]);
 
 CompareOptions = [abs(OptionNeg), abs(Option0), abs(OptionPos)];
 [~, ClosestOption] = min(CompareOptions);
-
+%Find likeliest option
 switch ClosestOption
     case 1
         InitialFrameErrorSamples = OptionNeg;
